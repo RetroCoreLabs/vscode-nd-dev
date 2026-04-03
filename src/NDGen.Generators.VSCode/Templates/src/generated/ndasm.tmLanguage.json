@@ -1,0 +1,97 @@
+{
+  "name": "ND-100 Assembly",
+  "scopeName": "source.ndasm",
+  "fileTypes": [
+    "asm",
+    "s"
+  ],
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#instruction"
+    },
+    {
+      "include": "#register"
+    },
+    {
+      "include": "#literal"
+    },
+    {
+      "include": "#directive"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.semicolon.ndasm",
+          "match": ";.*$"
+        }
+      ]
+    },
+    "instruction": {
+      "patterns": [
+        {
+          "name": "keyword.instruction.ndasm",
+          "match": "\\b(?i)(AAA|AAB|AAT|AAX|ADD|ADDD|AND|BANC|BAND|BFILL|BLDA|BLDC|BORA|BORC|BSET|BSKP|BSTA|BSTC|CHREENTPAGES|CLEPT|CLEPU|CLNREENT|CLPT|CNREK|COMD|COPY|DEPO|DNZ|ELEAV|ENPT|ENTR|EXAM|EXIT|EXR|FAD|FDV|FMU|FSB|GECO|IDENT|INIT|INSPL|IOF|ION|IOT|IOX|IOXT|IRR|IRW|JAF|JAN|JAP|JAZ|JMP|JNC|JPC|JPL|JXN|JXZ|LACB|LASB|LBIT|LBITP|LBYT|LBYTP|LDA|LDATX|LDBTX|LDD|LDDTX|LDF|LDT|LDX|LDXTX|LEAVE|LRB|LWCS|LXCB|LXSB|MCL|MIN|MIX3|MON|MOVB|MOVBF|MOVEW|MPY|MST|NLZ|OPCOM|ORA|PACK|PIOF|PION|POF|PON|RADD|RAND|RCLR|RDCR|RDIV|RDUS|RDUSP|REMPL|REPT|REX|REXO|RGLOB|RINC|RMPY|RORA|RSUB|SAA|SAB|SACB|SAD|SASB|SAT|SAX|SBIT|SBITP|SBYT|SBYTP|SETPT|SEX|SHA|SHD|SHDE|SHT|SKP|SRB|STA|STATX|STD|STDTX|STF|STT|STX|STZ|STZTX|SUB|SUBD|SWAP|SZCB|SZSB|TRA|TRR|TSET|TSETP|UPACK|VERSN|WAIT|WGLOB)\\b"
+        }
+      ]
+    },
+    "register": {
+      "patterns": [
+        {
+          "name": "variable.register.ndasm",
+          "match": "\\b(?i)(STS|D|P|B|L|A|T|X)\\b"
+        }
+      ]
+    },
+    "literal": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.ndasm",
+          "match": "\\b0x[0-9A-Fa-f]\u002B\\b"
+        },
+        {
+          "name": "constant.numeric.binary.ndasm",
+          "match": "\\b0b[01]\u002B\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.ndasm",
+          "match": "\\b[0-9]\u002B\\b"
+        },
+        {
+          "name": "string.quoted.double.ndasm",
+          "begin": "\u0022",
+          "end": "\u0022",
+          "patterns": [
+            {
+              "name": "constant.character.escape.ndasm",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.ndasm",
+          "begin": "\u0027",
+          "end": "\u0027",
+          "patterns": [
+            {
+              "name": "constant.character.escape.ndasm",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "directive": {
+      "patterns": [
+        {
+          "name": "keyword.control.directive.ndasm",
+          "match": "\\b(?i)(db|dw|dd|equ|org|include|macro|endm|section|segment|align|extern|global|proc|endp)\\b"
+        }
+      ]
+    }
+  }
+}

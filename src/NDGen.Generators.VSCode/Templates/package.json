@@ -1,0 +1,355 @@
+{
+  "name": "nd100-dev",
+  "displayName": "ND-100 Development",
+  "description": "Comprehensive development environment for ND-100: C cross-compilation with PCC, assembly language support, syntax highlighting, intelligent code completion, hover information, debugging, and build pipeline integration",
+  "version": "0.0.4",
+  "publisher": "hackercorplabs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HackerCorpLabs/vscode-nd100-assembly"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "bugs": {
+    "url": "https://github.com/HackerCorpLabs/vscode-nd100-assembly/issues"
+  },
+  "keywords": ["ND-100", "assembly", "ndasm", "C", "compiler", "PCC", "cross-compiler", "debugger", "syntax highlighting", "minicomputer"],
+  "categories": ["Programming Languages", "Debuggers"],
+  "activationEvents": [
+    "onLanguage:ndasm",
+    "workspaceContains:**/*.asm",
+    "workspaceContains:**/*.s",
+    "workspaceContains:**/*.c",
+    "onDebugResolve:ND-100 Assembly",
+    "onDebugDynamicConfigurations:ND-100 Assembly",
+    "onDebugAdapterTracker:ND-100 Assembly",
+    "onCommand:nd100.compile",
+    "onCommand:nd100.assemble",
+    "onCommand:nd100.link",
+    "onCommand:nd100.build",
+    "onCommand:nd100.clean"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "ndasm",
+        "aliases": [
+          "ND-100 Assembly",
+          "ndasm"
+        ],
+        "extensions": [
+          ".asm",
+          ".s"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ndasm",
+        "scopeName": "source.ndasm",
+        "path": "./src/generated/ndasm.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "ND-100 Development",
+      "properties": {
+        "nd100.editor.lowercaseMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use lowercase for all instructions and automatically convert uppercase instructions to lowercase"
+        },
+        "ndasm.enableInlayHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inlay hints for ND-100 assembly instructions"
+        },
+        "ndasm.enableOpcodeInlayHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show machine code opcode and affected flags at end of instruction lines"
+        },
+        "ndasm.enableParameterInlayHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show operand name and type hints after instruction parameters"
+        },
+        "nd100.toolchain.compiler": {
+          "type": "string",
+          "default": "nd100-nd-bsd-pcc",
+          "description": "Path to PCC cross-compiler driver"
+        },
+        "nd100.toolchain.assembler": {
+          "type": "string",
+          "default": "nd100-as",
+          "description": "Path to ND-100 assembler"
+        },
+        "nd100.toolchain.linker": {
+          "type": "string",
+          "default": "nd100-ld",
+          "description": "Path to ND-100 linker"
+        },
+        "nd100.toolchain.debugger": {
+          "type": "string",
+          "default": "nd100x",
+          "description": "Path to nd100x emulator binary. Used to auto-launch debug sessions when pressing F5"
+        },
+        "nd100.toolchain.includePaths": {
+          "type": "array",
+          "default": [],
+          "description": "Additional include paths for the C compiler (-I flags)"
+        },
+        "nd100.toolchain.libraryPaths": {
+          "type": "array",
+          "default": [],
+          "description": "Library search paths for the linker (-L flags)"
+        },
+        "nd100.toolchain.assemblerFlags": {
+          "type": "string",
+          "default": "-m",
+          "description": "Additional flags passed to nd100-as during assembly. Default -m generates a symbol map file"
+        },
+        "nd100.toolchain.compilerFlags": {
+          "type": "string",
+          "default": "-xuchar",
+          "description": "Additional PCC compiler flags. Default -xuchar treats char as unsigned (ND-100 convention)"
+        },
+        "nd100.toolchain.linkerFlags": {
+          "type": "string",
+          "default": "",
+          "description": "Additional flags passed to nd100-ld during linking"
+        },
+        "nd100.toolchain.dapPort": {
+          "type": "number",
+          "default": 4711,
+          "description": "TCP port for DAP communication between VS Code and nd100x. Change if 4711 conflicts with another service"
+        },
+        "nd100.toolchain.crt0Path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to crt0.o (startup object). Leave empty to skip."
+        },
+        "nd100.toolchain.libcPath": {
+          "type": "string",
+          "default": "",
+          "description": "Root of nd100-libc repository (e.g. ~/repos/nd100-libc). Required for C compilation - provides crt0.o, csav/cret runtime, and libc.a"
+        },
+        "nd100.toolchain.linkLibc": {
+          "type": "boolean",
+          "default": true,
+          "description": "Link C programs against nd100-libc automatically. Includes startup code (crt0.o), calling convention helpers (csav.o, cret.o), and the C standard library"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "ndasm.convertToUppercase",
+        "title": "Convert All Instructions to Uppercase",
+        "category": "ND-100"
+      },
+      {
+        "command": "ndasm.convertToLowercase",
+        "title": "Convert All Instructions to Lowercase",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.compile",
+        "title": "Compile C File",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.assemble",
+        "title": "Assemble File",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.link",
+        "title": "Link Program",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.build",
+        "title": "Build (Compile + Assemble + Link)",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.clean",
+        "title": "Clean Build Artifacts",
+        "category": "ND-100"
+      },
+      {
+        "command": "nd100.openSettings",
+        "title": "Toolchain Settings",
+        "category": "ND-100"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "nd100",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["compile", "assemble", "link", "build", "make", "clean"],
+            "description": "Build action to perform"
+          },
+          "file": {
+            "type": "string",
+            "description": "Source file to process"
+          },
+          "output": {
+            "type": "string",
+            "description": "Output file path"
+          },
+          "makeTarget": {
+            "type": "string",
+            "description": "Make target (for action=make)"
+          }
+        }
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "ndasm"
+      },
+      {
+        "language": "c"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "ND-100 Assembly",
+        "label": "ND-100 Debugger",
+        "languages": [
+          "ndasm",
+          "c"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the assembled/linked .out file"
+              },
+              "mapFile": {
+                "type": "string",
+                "description": "Path to .map (assembly) or .srcmap (C) debug info file. Auto-detected from source file type"
+              },
+              "sourceFile": {
+                "type": "string",
+                "description": "Path to the source file (.s, .asm, or .c)"
+              },
+              "srcmapFile": {
+                "type": "string",
+                "description": "Path to the .srcmap file (for C source-level debugging)"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": true,
+                "description": "Pause at program entry point. Disable for C files to stop at first breakpoint instead"
+              },
+              "autoLaunch": {
+                "type": "boolean",
+                "default": true,
+                "description": "Automatically start nd100x when debugging begins. Disable if running nd100x externally"
+              },
+              "port": {
+                "type": "number",
+                "default": 4711,
+                "description": "Port to connect to (for attach or auto-launch)"
+              },
+              "sourcePaths": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": [],
+                "description": "Directories to search when resolving source files from debug info. Auto-populated from toolchain settings (libc path, include paths)"
+              }
+            },
+            "required": [
+              "program"
+            ]
+          }
+        },
+        "initialConfigurations": [
+          {
+            "name": "Debug ND-100 Assembly",
+            "type": "ND-100 Assembly",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}.out",
+            "mapFile": "${fileDirname}/${fileBasenameNoExtension}.map",
+            "sourceFile": "${file}",
+            "autoLaunch": true,
+            "stopOnEntry": true,
+            "port": 4711,
+            "preLaunchTask": "nd100: assemble"
+          },
+          {
+            "name": "Debug ND-100 C Program",
+            "type": "ND-100 Assembly",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}.out",
+            "mapFile": "${fileDirname}/${fileBasenameNoExtension}.srcmap",
+            "sourceFile": "${file}",
+            "sourcePaths": ["${workspaceFolder}"],
+            "autoLaunch": true,
+            "stopOnEntry": true,
+            "port": 4711,
+            "preLaunchTask": "nd100: build"
+          }
+        ]
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "nd100-pcc",
+        "owner": "nd100",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+), line (\\d+): (warning|error): (.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "nd100-as",
+        "owner": "nd100",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^error: (.+), line (\\d+): (.+)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      },
+      {
+        "name": "nd100-ld",
+        "owner": "nd100",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^.+nd100-ld: (warning|error): (.+)$",
+          "severity": 1,
+          "message": 2
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "vscode-jsonrpc": "^8.2.0",
+    "@vscode/debugprotocol": "^1.51.0"
+  }
+}
