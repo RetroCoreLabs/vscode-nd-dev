@@ -106,7 +106,7 @@ flowchart TD
   F --> G[TypeScript in extension/src/\nbecomes JavaScript in extension/out/]
   G --> H[VS Code runs extension via\npackage.json main = ./out/extension.js]
   G --> I[Optional: npx vsce package]
-  I --> J[Produces nd100-dev-0.0.4.vsix\ninstallable plugin]
+  I --> J["Produces installable .vsix\n(name and version from package.json)"]
 ```
 
 1. **Definitions** live in **`nd100-definitions/`** (submodule): CPU metadata, per-instruction YAML, etc.
@@ -188,7 +188,7 @@ They assume the **current directory** is the repo root (the folder containing **
 | **`dotnet build ND100.VSCode.sln`** | **`src/`** (C# projects: **`ND100.VSCode.Tool`**, **`NDGen.Generators.*`**, **`NDGen.Generators.Common`**), **`nd100-definitions/src/ND100.Definitions/`** | **`bin/`** and **`obj/`** under each project (normal .NET build output; local only). |
 | **`dotnet run … ND100.VSCode.Tool`** (codegen) | **`nd100-definitions/specs/`** (YAML, especially **`cpu.yaml`** and **`specs/instructions/`**), plus static files already under **`extension/`** (the tool requires **`extension/package.json`** to exist) | **`extension/src/generated/generatedData.ts`**, **`extension/src/generated/ndasm.tmLanguage.json`**, and ensures **`extension/out/`** exists (may be empty until **`npm run compile`**). |
 | **`npm run compile`** (in **`extension/`**) | **`extension/src/**/*.ts`**, **`extension/tsconfig.json`** | **`extension/out/`** (compiled **`.js`** + **`.js.map`** mirroring **`src/`**). |
-| **`npx @vscode/vsce package`** (in **`extension/`**) | Everything under **`extension/`** that is **not** excluded by **`extension/.vscodeignore`** (typically includes **`package.json`**, **`out/`**, **`language-configuration.json`**, grammar **`extension/src/generated/ndasm.tmLanguage.json`**, and a small subset of **`node_modules/`** per **`.vscodeignore`**) | **`extension/*.vsix`** next to **`package.json`** (VSIX name uses **`package.json`** **`version`**, e.g. **`nd100-dev-0.0.4.vsix`**). |
+| **`npx @vscode/vsce package`** (in **`extension/`**) | Everything under **`extension/`** that is **not** excluded by **`extension/.vscodeignore`** (typically includes **`package.json`**, **`out/`**, **`language-configuration.json`**, grammar **`extension/src/generated/ndasm.tmLanguage.json`**, and a small subset of **`node_modules/`** per **`.vscodeignore`**) | **`extension/*.vsix`** next to **`package.json`**. Filename is **`<name>-<version>.vsix`** where **`name`** and **`version`** come from **`extension/package.json`** (same rules as **`vsce`**). |
 
 **Not used** for the current extension pipeline: there is no **`output/`** directory anymore; the extension project is entirely under **`extension/`**.
 
