@@ -6,6 +6,27 @@ This repository is the **ND-100 VS Code extension** plus a small **.NET code gen
 
 ---
 
+## Installing a release `.vsix` (Visual Studio Code only)
+
+This repo produces a **Visual Studio Code** extension. The VSIX manifest lists **`Microsoft.VisualStudio.Code`** as the host—not full **Visual Studio** (the IDE with **`VSIXInstaller.exe`** under *Program Files (x86)\Microsoft Visual Studio\...*).
+
+On Windows, **double‑clicking** a `.vsix` often opens **Visual Studio’s** *Microsoft VSIX Installer*. That program only installs extensions for **Visual Studio IDE**, so it fails with an error like: *One or more extensions are for Visual Studio Code. Try installing them in Visual Studio Code.* (You may see `VSIXInstaller.NoApplicableSKUsException` in the install log.) **That does not mean the VSIX is broken**—you used the wrong installer.
+
+**Install inside Visual Studio Code:**
+
+1. Open **Visual Studio Code**.
+2. Open the **Extensions** view → **⋯** (Views and More Actions) → **Install from VSIX…** → choose your `.vsix`.
+
+Or from a shell (VS Code’s **`code`** on your `PATH`):
+
+```powershell
+code --install-extension "C:\path\to\nd100-dev-<version>.vsix"
+```
+
+Use the file you built locally under **`extension/`** or downloaded from **GitHub Releases**; the exact filename follows **`<name>-<version>.vsix`** from **`extension/package.json`**.
+
+---
+
 ## Git: what to commit vs what is ignored
 
 **Commit** (source you care about, shared with collaborators):
