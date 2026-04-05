@@ -1,6 +1,20 @@
+# --- .NET / Visual Studio ---
 [Bb]in/
 [Oo]bj/
 .vs/
 *.user
 *.suo
+
+# --- Legacy / optional local output (not used by current extension path) ---
 output/
+
+# --- VS Code extension build artifacts (under extension/) ---
+extension/node_modules/
+extension/out/
+extension/*.vsix
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

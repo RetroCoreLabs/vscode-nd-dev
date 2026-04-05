@@ -1,0 +1,37 @@
+# Source files that should be transpiled - they'll be available as JS in out/
+src/**
+!src/generated/**/*.json
+
+# Development files
+.vscode/**
+.github/**
+.git/**
+test/**
+.editorconfig
+.prettierrc
+.prettierignore
+tslint.json
+webpack.config.js
+jest.config.js
+tsconfig.json
+.gitignore
+.eslintrc.json
+
+# Exclude sourcemaps
+out/**/*.map
+
+# Exclude TypeScript files when in the out directory
+out/**/*.ts
+
+# Node modules (include only production dependencies in VSIX)
+node_modules/**
+!node_modules/@vscode/debugprotocol/**
+!node_modules/vscode-jsonrpc/**
+
+# Generated files that aren't needed in production
+**/.DS_Store
+**/.vscode-test/**
+**/*.vsix
+
+# Other unnecessary files
+.vscodeignore 

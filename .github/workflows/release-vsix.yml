@@ -1,0 +1,80 @@
+# Build extension/.vsix from nd100-definitions and publish a GitHub Release when a version tag is pushed.
+# Tag examples: v0.0.5 or 0.0.5 (leading "v" is stripped for package.json / VSIX filename).
+name: Release VSIX
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Derive semver from tag
+        id: meta
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Refuse to build: tag '$TAG' must look like semver after optional leading v (e.g. v0.0.5 or 0.0.5)."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building VSIX for version $VERSION from tag $TAG"
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Align extension/package.json version with tag
+        working-directory: extension
+        run: npm pkg set "version=${{ steps.meta.outputs.version }}"
+
+      - name: Codegen (.NET)
+        run: |
+          dotnet build ND100.VSCode.sln -c Release --verbosity minimal
+          dotnet run --project src/ND100.VSCode.Tool/ND100.VSCode.Tool.csproj -c Release --no-build
+
+      - name: Compile TypeScript
+        working-directory: extension
+        run: |
+          npm ci
+          npm run compile
+
+      - name: Package VSIX
+        working-directory: extension
+        run: npx --yes @vscode/vsce package
+
+      - name: List artifact
+        run: ls -la extension/*.vsix
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: extension/*.vsix
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

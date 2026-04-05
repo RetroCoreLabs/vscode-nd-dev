@@ -16,15 +16,14 @@ internal static class Program
         {
             Console.WriteLine("ND100 VS Code extension generator. Requires nd100-definitions submodule.");
             Console.WriteLine("Usage: dotnet run --project src/ND100.VSCode.Tool");
-            Console.WriteLine("Output: ./output/vscode");
+            Console.WriteLine("Writes generated files under ./extension/src/generated/ (static extension lives in ./extension/).");
             return 0;
         }
 
         try
         {
             var baseDir = FindRepoRoot();
-            var outputDir = Path.Combine(baseDir, "output");
-            Directory.CreateDirectory(Path.Combine(outputDir, "vscode"));
+            var extensionDir = Path.Combine(baseDir, "extension");
 
             var services = new ServiceCollection();
             services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Information));
@@ -36,11 +35,11 @@ internal static class Program
             var loader = sp.GetRequiredService<DefinitionLoader>();
             loader.Initialize(GetCpuYamlPath(baseDir));
 
-            logger.LogInformation("Generating VS Code extension sources...");
-            var gen = new VSCodeExtensionGenerator(Path.Combine(outputDir, "vscode"), loader);
+            logger.LogInformation("Generating VS Code extension artifacts...");
+            var gen = new VSCodeExtensionGenerator(extensionDir, loader);
             gen.SetBaseDirectory(baseDir);
             gen.Generate();
-            logger.LogInformation("Done. Output: {Path}", Path.Combine(outputDir, "vscode"));
+            logger.LogInformation("Done. Extension project: {Path}", extensionDir);
             return 0;
         }
         catch (Exception ex)

@@ -4,19 +4,15 @@ using System.Text;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
 using NDGen.Core;
 using NDGen.Core.Models;
-using System.Reflection;
 
 namespace NDGen.Generators
 {
     /// <summary>
-    /// Generates a VS Code extension for ND-100 assembly language support.
-    /// The extension provides syntax highlighting, code completion, hover information,
-    /// signature help, and parameter hints for ND-100 assembly code.
+    /// Writes codegen outputs into the VS Code extension project:
+    /// <c>src/generated/generatedData.ts</c> and <c>src/generated/ndasm.tmLanguage.json</c>.
+    /// Static sources (TypeScript, manifest, config) live in that folder and are edited in the repo.
     /// </summary>
     public class VSCodeExtensionGenerator : BaseGenerator
     {        
@@ -27,12 +23,11 @@ namespace NDGen.Generators
 
 ";
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
-        private const string TEMPLATES_RELATIVE_PATH = "src/NDGen.Generators.VSCode/Templates";
 
         /// <summary>
         /// Initializes a new instance of the VSCodeExtensionGenerator class.
         /// </summary>
-        /// <param name="outputPath">The path where the generated extension will be saved.</param>
+        /// <param name="outputPath">Root of the extension project (e.g. repo <c>extension/</c>).</param>
         /// <param name="loader">The DefinitionLoader used to load instruction and register definitions.</param>
         public VSCodeExtensionGenerator(string outputPath, DefinitionLoader loader)
             : base(outputPath, loader)
@@ -40,139 +35,26 @@ namespace NDGen.Generators
         }
 
         /// <summary>
-        /// Generates the VS Code extension by creating all necessary files and configurations.
+        /// Writes generated artifacts under <c>src/generated/</c>. Expects static extension files to already exist.
         /// </summary>
         public override void Generate()
         {
-            Console.WriteLine($"Generating VS Code extension in '{OutputPath}'...");            
+            Console.WriteLine($"Generating VS Code extension artifacts in '{OutputPath}'...");
 
-            Directory.CreateDirectory(OutputPath);
-            
-            // Create necessary directories
-            var srcDir = Path.Combine(OutputPath, "src");
-            Directory.CreateDirectory(srcDir);
+            if (!File.Exists(Path.Combine(OutputPath, "package.json")))
+            {
+                throw new InvalidOperationException(
+                    $"VS Code extension project not found at '{OutputPath}' (missing package.json).");
+            }
+
             Directory.CreateDirectory(Path.Combine(OutputPath, "out"));
-            
 
-            // Generate the data file
             GenerateDataFile(OutputPath);
             GenerateTextMateGrammar(OutputPath);
 
-            // Copy TypeScript src files!!
-            //TODO!!!
-            //CopyTypeScriptTemplateFiles(srcDir);
-
-
-
-            // Generate extension metadata files
-            //CopyPackageJson(OutputPath);
-            CopyFile(OutputPath, "package.json");
-            CopyFile(OutputPath, "package-lock.json");
-            
-            //CopyTsConfig(OutputPath);
-            CopyFile(OutputPath, "tsconfig.json");
-
-            //CopyDefaultTasksFile(OutputPath);
-            CopyFile(OutputPath, ".vscode/tasks.json");
-            
-            // Copy documentation and additional files
-            CopyFile(OutputPath, "README.md");
-            CopyFile(OutputPath, "LICENSE");
-            
-            Console.WriteLine($"VS Code extension generated at {OutputPath}");
+            Console.WriteLine($"VS Code codegen finished at {OutputPath}");
         }
 
-        private void CopyTypeScriptTemplateFiles(string destSrcDir)
-        {
-            Console.WriteLine("Copying TypeScript src files...");
-            
-            // Get the path to the template files using the base directory
-            var sourceFilePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, "src"));
-            
-
-            
-            // Copy all TypeScript files except template files
-            foreach (var file in Directory.GetFiles(sourceFilePath, "*.ts")
-                                         .Where(f => !f.EndsWith(".template")))
-            {
-                var fileName = Path.GetFileName(file);
-                var destFile = Path.Combine(destSrcDir, fileName);
-                
-                Console.WriteLine($"Copying {fileName} to {destFile}");
-                File.Copy(file, destFile, overwrite: true);
-            }
-        }
-
-#if _old_shit_
-        private void GenerateDataFile(string srcDir)
-        {
-            Console.WriteLine("Generating data file...");
-            
-              
-            // Use hardcoded template if no template file found
-            if (templateContent == null)
-            {
-                Console.WriteLine("Warning: generatedData.ts.template not found. Using hard-coded template.");
-                GenerateDataFileWithHardcodedTemplate(srcDir);
-                return;
-            }
-            
-            // Generate the instruction data
-            var instructionData = Loader.GetInstructions().ToDictionary(
-                i => i.Name.ToUpper(),
-                i => new
-                {
-                    i.Name,
-                    i.Opcode,
-                    i.Format,
-                    i.Description,
-                    i.GeneratedBitFormat,
-                    i.Category,
-                    i.InstructionClass,
-                    DetailedDescription = i.DetailedDescription ?? string.Empty,
-                    Privilege = i.Privilege.ToString().ToLower(),
-                    FlagsAffected = i.FlagsAffected ?? new List<string>(),
-                    Operands = i.Operands?.Select(op => new 
-                    {
-                        op.Name,
-                        op.Type,
-                        op.Description,
-                        op.Bits,
-                        EnumOptions = op.Type == "enum" && op.Enum != null 
-                            ? op.Enum.Select(e => new { e.Name, e.Value, e.Description }).ToList() 
-                            : null
-                    }).ToList(),
-                    Visualization = GenerateInstructionVisualization(i)
-                }
-            );
-
-            var registerData = Loader.GetCpuDefinition().Metadata.Registers.ToDictionary(
-                r => r.Name.ToUpper(),
-                r => new
-                {
-                    r.Name,
-                    r.Size,
-                    r.Description,
-                    r.Type,
-                    Bits = r.Bits?.Select(b => new { b.Name, b.Description, b.Position, b.Size }).ToArray() ?? Array.Empty<object>()
-                }
-            );
-            
-            // Replace the placeholders with the actual data
-            var content = templateContent
-                .Replace("{{INSTRUCTION_DATA}}", JsonSerializer.Serialize(instructionData, _jsonSerializerOptions))
-                .Replace("{{REGISTER_DATA}}", JsonSerializer.Serialize(registerData, _jsonSerializerOptions));
-            
-            // Add the autogenerated header
-            content = AUTOGENERATED_HEADER + content;
-            
-            // Write the generated file
-            var outputFile = Path.Combine(srcDir, "generatedData.ts");
-            File.WriteAllText(outputFile, content);
-            
-            Console.WriteLine($"Generated data file at {outputFile}");
-        }
-#endif
         private void GenerateDataFile(string outDIR)
         {
             Console.WriteLine("Using hard-coded template for data file generation...");
@@ -242,8 +124,8 @@ export const registerData: RegisterData = {{REGISTER_DATA}};
             // Add the autogenerated header
             content = AUTOGENERATED_HEADER + content;
             
-            // Write the generated file
-            var outputFile = Path.Combine(outDIR, "src/generated/generatedData.ts");
+            var outputFile = Path.Combine(outDIR, "src", "generated", "generatedData.ts");
+            Directory.CreateDirectory(Path.GetDirectoryName(outputFile)!);
             File.WriteAllText(outputFile, content);
             
             Console.WriteLine($"Generated data file at {outputFile}");
@@ -290,134 +172,6 @@ export const registerData: RegisterData = {{REGISTER_DATA}};
 
             // Use pre-generated bit format instead of generating it again
             return inst.GeneratedBitFormat ?? string.Empty;
-        }
-
-        private void CopyReadmeFile(string extensionPath)
-        {
-            var readmePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, "README.md"));
-            
-            if (!File.Exists(readmePath))
-            {
-                // Fallback to assembly location
-                var assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                if (string.IsNullOrEmpty(assemblyLocation))
-                {
-                    Console.WriteLine("README.md template not found, skipping...");
-                    return;
-                }
-
-                readmePath = Path.Combine(assemblyLocation, "Templates", "README.md");
-                
-                if (!File.Exists(readmePath))
-                {
-                    Console.WriteLine("README.md template not found, skipping...");
-                    return;
-                }
-            }
-            
-            var destReadmePath = Path.Combine(extensionPath, "README.md");
-            File.Copy(readmePath, destReadmePath, overwrite: true);
-        }
-
-
-        private void CopyFile(string extensionPath, string fileName)
-        {
-            var sourceFilePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, fileName));
-            
-            if (!File.Exists(sourceFilePath))
-            {
-               throw new Exception($"File {fileName} not found!");
-            }
-            
-            var destFilePath = Path.Combine(extensionPath, fileName);
-            File.Copy(sourceFilePath, destFilePath, overwrite: true);
-        }
-
-
-        private void CopyPackageJson(string extensionPath)
-        {
-            Console.WriteLine("Generating package.json...");
-            
-            // Load package.json template
-            var templatePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, "package.json"));
-            
-            if (!File.Exists(templatePath))
-            {
-                Console.WriteLine("Error: package.json not found!");
-                throw new FileNotFoundException("Required template file not found", templatePath);
-            }
-            
-            // Read the template content
-            var content = File.ReadAllText(templatePath);
-            
-            // Write to the output path
-            File.WriteAllText(Path.Combine(extensionPath, "package.json"), content);
-            
-            // Generate package-lock.json
-            CopyPackageLockJson(extensionPath);
-        }
-        
-        private void CopyPackageLockJson(string extensionPath)
-        {
-            // Load package-lock.json template
-            var templatePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, "package-lock.json"));
-            
-            if (!File.Exists(templatePath))
-            {
-                Console.WriteLine("Error: package-lock.json not found!");
-                throw new FileNotFoundException("Required template file not found", templatePath);
-            }
-            
-            // Read the template content
-            var content = File.ReadAllText(templatePath);
-            
-            // Write to the output path
-            File.WriteAllText(Path.Combine(extensionPath, "package-lock.json"), content);
-        }
-
-
-        private void CopyTsConfig(string extensionPath)
-        {
-            Console.WriteLine("Generating tsconfig.json...");
-            
-            // Load tsconfig.json template
-            var templatePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, "tsconfig.json"));
-            
-            if (!File.Exists(templatePath))
-            {
-                Console.WriteLine("Error: tsconfig.json not found!");
-                throw new FileNotFoundException("Required template file not found", templatePath);
-            }
-            
-            // Read the template content
-            var content = File.ReadAllText(templatePath);
-            
-            // Write to the output path
-            File.WriteAllText(Path.Combine(extensionPath, "tsconfig.json"), content);
-        }
-
-        private void CopyDefaultTasksFile(string extensionPath)
-        {
-            Console.WriteLine("Generating default tasks file...");
-            
-            // Create .vscode directory
-            var vscodePath = Path.Combine(extensionPath, ".vscode");
-            Directory.CreateDirectory(vscodePath);
-            
-            // Load tasks.json template
-            var templatePath = GetTemplatePath(Path.Combine(TEMPLATES_RELATIVE_PATH, ".vscode", "tasks.json"));
-            
-            if (!File.Exists(templatePath))
-            {
-                Console.WriteLine("Error: tasks.json not found!");
-                throw new FileNotFoundException("Required template file not found", templatePath);
-            }
-            
-            // Read the template content
-            var content = File.ReadAllText(templatePath);
-            
-            // Write to the output path
-            File.WriteAllText(Path.Combine(vscodePath, "tasks.json"), content);
         }
 
         private void GenerateTextMateGrammar(string extensionPath)
