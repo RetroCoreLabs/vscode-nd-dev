@@ -1,8 +1,8 @@
 # ND-100 Development
 
-**Monorepo layout:** This folder is the VS Code extension project (`extensions/nd100-dev`). NDGen writes **`src/generated/generatedData.ts`** and **`src/generated/ndasm.tmLanguage.json`** from `nd100-definitions`. Full build from repo root: `./scripts/build-vscode-extension.sh`. See `src/generated/README.md` for generated vs hand-maintained files.
+VS Code support for **Norsk Data ND-100** software: **ndasm** assembly (syntax highlighting, hovers, completion, inlay hints), optional **C** cross-compilation with PCC, and **source-level debugging** against the nd100x emulator via DAP.
 
-Full development environment for the Norsk Data ND-100 minicomputer: C cross-compilation with PCC, assembly language support, source-level debugging, and integrated build pipeline.
+Install this extension from the Marketplace or a `.vsix`. Using the features below only requires the **ND-100 toolchain** on your machine (see [Quick Start](#quick-start))—not a clone of any generator or language-definitions repository.
 
 ## Quick Start
 
