@@ -10,7 +10,7 @@ output/
 
 # --- VS Code extension build artifacts (under extension/) ---
 extension/node_modules/
-extension/out/
+extension/build/
 extension/*.vsix
 
 # --- OS / editor noise ---

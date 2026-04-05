@@ -1,4 +1,4 @@
-# Source files that should be transpiled - they'll be available as JS in out/
+# Source files that should be transpiled - they'll be available as JS in build/
 src/**
 !src/generated/**/*.json
 
@@ -18,10 +18,10 @@ tsconfig.json
 .eslintrc.json
 
 # Exclude sourcemaps
-out/**/*.map
+build/**/*.map
 
-# Exclude TypeScript files when in the out directory
-out/**/*.ts
+# Exclude TypeScript files when in the build directory
+build/**/*.ts
 
 # Node modules (include only production dependencies in VSIX)
 node_modules/**

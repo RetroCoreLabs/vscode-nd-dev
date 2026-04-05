@@ -46,7 +46,7 @@ else
   npm install
 fi
 
-echo "=== TypeScript compile -> extension/out ==="
+echo "=== TypeScript compile -> extension/build ==="
 npm run compile
 
 if [[ "$PACKAGE_VSIX" -eq 1 ]]; then

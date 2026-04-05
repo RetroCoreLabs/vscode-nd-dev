@@ -1,6 +1,6 @@
 # vscode-nd100-dev
 
-This repository is the **ND-100 VS Code extension** plus a small **.NET code generator** that turns YAML instruction/register definitions into TypeScript data and a TextMate grammar. You maintain hand-written extension code under **`extension/`**. The tool overwrites only the **generated** files. TypeScript is then compiled to JavaScript under **`extension/out/`**, which VS Code loads. Optionally you package everything into a **`.vsix`** installable plugin.
+This repository is the **ND-100 VS Code extension** plus a small **.NET code generator** that turns YAML instruction/register definitions into TypeScript data and a TextMate grammar. You maintain hand-written extension code under **`extension/`**. The tool overwrites only the **generated** files. TypeScript is then compiled to JavaScript under **`extension/build/`**, which VS Code loads. Optionally you package everything into a **`.vsix`** installable plugin.
 
 **Paths in this file** are **relative to the repository root** (the folder that contains **`ND100.VSCode.sln`**). They work for any clone on any machine.
 
@@ -26,7 +26,7 @@ This repository is the **ND-100 VS Code extension** plus a small **.NET code gen
 | **`.vs/`** | Visual Studio user state. |
 | **`output/`** | Legacy local folder; not used by the **`extension/`** pipeline. |
 | **`extension/node_modules/`** | Restored with **`npm ci`** / **`npm install`** from **`package-lock.json`**. |
-| **`extension/out/`** | Produced by **`npm run compile`**. |
+| **`extension/build/`** | Produced by **`npm run compile`**. |
 | **`extension/*.vsix`** | Packaged extension; build product, not source. |
 | **OS junk** | e.g. **`.DS_Store`**, **`Thumbs.db`** (see **`.gitignore`**). |
 
@@ -75,7 +75,7 @@ flowchart LR
   end
   subgraph build [Node build]
     TSC["tsc\nnpm run compile"]
-    OUT["extension/out/\n*.js"]
+    OUT["extension/build/\n*.js"]
   end
   subgraph ship [Optional package]
     VSCE["vsce package"]
@@ -103,17 +103,17 @@ flowchart TD
   C --> D[Writes generatedData.ts + ndasm.tmLanguage.json\nunder extension/src/generated/]
   D --> E[npm install in extension/]
   E --> F[npm run compile]
-  F --> G[TypeScript in extension/src/\nbecomes JavaScript in extension/out/]
-  G --> H[VS Code runs extension via\npackage.json main = ./out/extension.js]
+  F --> G[TypeScript in extension/src/\nbecomes JavaScript in extension/build/]
+  G --> H[VS Code runs extension via\npackage.json main = ./build/extension.js]
   G --> I[Optional: npx vsce package]
   I --> J["Produces installable .vsix\n(name and version from package.json)"]
 ```
 
 1. **Definitions** live in **`nd100-definitions/`** (submodule): CPU metadata, per-instruction YAML, etc.
 2. **Codegen** (**`src/ND100.VSCode.Tool/`**) loads those definitions and writes **only** the two generated artifacts under **`extension/src/generated/`**.
-3. **Compile** merges **all** TypeScript under **`extension/src/`** (hand-written + generated) into **`extension/out/`**.
-4. **Run in VS Code**: **`extension/package.json`** points **`main`** at **`./out/extension.js`**.
-5. **Ship**: from **`extension/`**, **`vsce package`** bundles the extension (including **`out/`**, grammar JSON, language config, etc.) into a **`.vsix`**.
+3. **Compile** merges **all** TypeScript under **`extension/src/`** (hand-written + generated) into **`extension/build/`**.
+4. **Run in VS Code**: **`extension/package.json`** points **`main`** at **`./build/extension.js`**.
+5. **Ship**: from **`extension/`**, **`vsce package`** bundles the extension (including **`build/`**, grammar JSON, language config, etc.) into a **`.vsix`**.
 
 ---
 
@@ -140,7 +140,7 @@ Legacy **`src/NDGen.Generators.VSCode/Templates/`** is **obsolete**; the real st
 |---------------|---------|----------------|
 | **`extension/package.json`** | Yes | Extension manifest: name, version, activation, **`main`**, contributes languages/grammars/commands/debuggers. |
 | **`extension/package-lock.json`** | Yes | Pinned npm dependencies for reproducible **`npm ci`**. |
-| **`extension/tsconfig.json`** | Yes | TypeScript compiler options; **`outDir`** is typically **`out`**. |
+| **`extension/tsconfig.json`** | Yes | TypeScript compiler options; **`outDir`** is **`build`**. |
 | **`extension/language-configuration.json`** | Yes | Brackets, comments, folding for the **`ndasm`** language. |
 | **`extension/.vscodeignore`** | Yes | Excludes dev files from the **`.vsix`** (e.g. **`src/`**, maps). |
 | **`extension/README.md`** | Yes | User-facing extension readme (can differ from repo root readme). |
@@ -165,7 +165,7 @@ Legacy **`src/NDGen.Generators.VSCode/Templates/`** is **obsolete**; the real st
 
 | Path | Role |
 |------|------|
-| **`extension/out/`** | **`tsc` output.** Mirrors **`src/`** as **`.js`** + **`.js.map`**. VS Code loads **`out/extension.js`**. |
+| **`extension/build/`** | **`tsc` output.** Mirrors **`src/`** as **`.js`** + **`.js.map`**. VS Code loads **`build/extension.js`**. |
 | **`extension/node_modules/`** | npm dependencies (local install). |
 
 ---
@@ -186,9 +186,9 @@ They assume the **current directory** is the repo root (the folder containing **
 | Step | What is **read** | What is **written** |
 |------|------------------|---------------------|
 | **`dotnet build ND100.VSCode.sln`** | **`src/`** (C# projects: **`ND100.VSCode.Tool`**, **`NDGen.Generators.*`**, **`NDGen.Generators.Common`**), **`nd100-definitions/src/ND100.Definitions/`** | **`bin/`** and **`obj/`** under each project (normal .NET build output; local only). |
-| **`dotnet run … ND100.VSCode.Tool`** (codegen) | **`nd100-definitions/specs/`** (YAML, especially **`cpu.yaml`** and **`specs/instructions/`**), plus static files already under **`extension/`** (the tool requires **`extension/package.json`** to exist) | **`extension/src/generated/generatedData.ts`**, **`extension/src/generated/ndasm.tmLanguage.json`**, and ensures **`extension/out/`** exists (may be empty until **`npm run compile`**). |
-| **`npm run compile`** (in **`extension/`**) | **`extension/src/**/*.ts`**, **`extension/tsconfig.json`** | **`extension/out/`** (compiled **`.js`** + **`.js.map`** mirroring **`src/`**). |
-| **`npx @vscode/vsce package`** (in **`extension/`**) | Everything under **`extension/`** that is **not** excluded by **`extension/.vscodeignore`** (typically includes **`package.json`**, **`out/`**, **`language-configuration.json`**, grammar **`extension/src/generated/ndasm.tmLanguage.json`**, and a small subset of **`node_modules/`** per **`.vscodeignore`**) | **`extension/*.vsix`** next to **`package.json`**. Filename is **`<name>-<version>.vsix`** where **`name`** and **`version`** come from **`extension/package.json`** (same rules as **`vsce`**). |
+| **`dotnet run … ND100.VSCode.Tool`** (codegen) | **`nd100-definitions/specs/`** (YAML, especially **`cpu.yaml`** and **`specs/instructions/`**), plus static files already under **`extension/`** (the tool requires **`extension/package.json`** to exist) | **`extension/src/generated/generatedData.ts`**, **`extension/src/generated/ndasm.tmLanguage.json`**, and ensures **`extension/build/`** exists (may be empty until **`npm run compile`**). |
+| **`npm run compile`** (in **`extension/`**) | **`extension/src/**/*.ts`**, **`extension/tsconfig.json`** | **`extension/build/`** (compiled **`.js`** + **`.js.map`** mirroring **`src/`**). |
+| **`npx @vscode/vsce package`** (in **`extension/`**) | Everything under **`extension/`** that is **not** excluded by **`extension/.vscodeignore`** (typically includes **`package.json`**, **`build/`**, **`language-configuration.json`**, grammar **`extension/src/generated/ndasm.tmLanguage.json`**, and a small subset of **`node_modules/`** per **`.vscodeignore`**) | **`extension/*.vsix`** next to **`package.json`**. Filename is **`<name>-<version>.vsix`** where **`name`** and **`version`** come from **`extension/package.json`** (same rules as **`vsce`**). |
 
 **Not used** for the current extension pipeline: there is no **`output/`** directory anymore; the extension project is entirely under **`extension/`**.
 
@@ -225,7 +225,7 @@ dotnet build ND100.VSCode.sln -c Release
 dotnet run --project src/ND100.VSCode.Tool/ND100.VSCode.Tool.csproj -c Release --no-build
 ```
 
-**2) Compile TypeScript** (updates **`extension/out/`**):
+**2) Compile TypeScript** (updates **`extension/build/`**):
 
 ```bash
 cd extension

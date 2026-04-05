@@ -50,7 +50,7 @@ if exist package-lock.json (
 )
 if errorlevel 1 exit /b 1
 
-echo === TypeScript compile -^> extension\out ===
+echo === TypeScript compile -^> extension\build ===
 call npm run compile
 if errorlevel 1 exit /b 1
 

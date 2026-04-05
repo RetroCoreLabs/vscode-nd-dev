@@ -47,7 +47,7 @@ namespace NDGen.Generators
                     $"VS Code extension project not found at '{OutputPath}' (missing package.json).");
             }
 
-            Directory.CreateDirectory(Path.Combine(OutputPath, "out"));
+            Directory.CreateDirectory(Path.Combine(OutputPath, "build"));
 
             GenerateDataFile(OutputPath);
             GenerateTextMateGrammar(OutputPath);

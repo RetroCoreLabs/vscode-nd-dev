@@ -30,7 +30,7 @@
     "onCommand:nd100.build",
     "onCommand:nd100.clean"
   ],
-  "main": "./out/extension.js",
+  "main": "./build/extension.js",
   "contributes": {
     "languages": [
       {
