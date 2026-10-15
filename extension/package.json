@@ -3,16 +3,16 @@
   "displayName": "ND-100 Development",
   "description": "Comprehensive development environment for ND-100: C cross-compilation with PCC, assembly language support, syntax highlighting, intelligent code completion, hover information, debugging, and build pipeline integration",
   "version": "0.0.4",
-  "publisher": "hackercorplabs",
+  "publisher": "retrocorelabs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HackerCorpLabs/vscode-nd100-assembly"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev"
   },
   "engines": {
     "vscode": "^1.85.0"
   },
   "bugs": {
-    "url": "https://github.com/HackerCorpLabs/vscode-nd100-assembly/issues"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev/issues"
   },
   "keywords": ["ND-100", "assembly", "ndasm", "C", "compiler", "PCC", "cross-compiler", "debugger", "syntax highlighting", "minicomputer"],
   "categories": ["Programming Languages", "Debuggers"],
