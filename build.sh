@@ -15,7 +15,7 @@ for a in "$@"; do
   if [[ "$a" == "--vsix" ]]; then PACKAGE_VSIX=1; fi
 done
 
-echo "=== vscode-nd100-dev build (repo: $REPO_ROOT) ==="
+echo "=== vscode-nd-dev build (repo: $REPO_ROOT) ==="
 
 if [[ ! -f "$REPO_ROOT/nd100-definitions/specs/cpu.yaml" ]]; then
   echo "Initializing nd100-definitions submodule..."

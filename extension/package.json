@@ -1,18 +1,18 @@
 {
-  "name": "nd100-dev",
-  "displayName": "ND-100 Development",
+  "name": "nd-dev",
+  "displayName": "ND Development",
   "description": "Comprehensive development environment for ND-100: C cross-compilation with PCC, assembly language support, syntax highlighting, intelligent code completion, hover information, debugging, and build pipeline integration",
   "version": "0.0.4",
   "publisher": "retrocorelabs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd-dev"
   },
   "engines": {
     "vscode": "^1.85.0"
   },
   "bugs": {
-    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev/issues"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd-dev/issues"
   },
   "keywords": ["ND-100", "assembly", "ndasm", "C", "compiler", "PCC", "cross-compiler", "debugger", "syntax highlighting", "minicomputer"],
   "categories": ["Programming Languages", "Debuggers"],
@@ -54,7 +54,7 @@
       }
     ],
     "configuration": {
-      "title": "ND-100 Development",
+      "title": "ND Development",
       "properties": {
         "nd100.editor.lowercaseMode": {
           "type": "boolean",

@@ -13,7 +13,7 @@ cd /d "%REPO%"
 set "PACKAGE_VSIX=0"
 if /i "%~1"=="--vsix" set "PACKAGE_VSIX=1"
 
-echo === vscode-nd100-dev build (repo: %REPO%) ===
+echo === vscode-nd-dev build (repo: %REPO%) ===
 
 if not exist "%REPO%\nd100-definitions\specs\cpu.yaml" (
   echo Initializing nd100-definitions submodule...
