@@ -1,4 +1,4 @@
-# vscode-nd100-dev
+# vscode-nd-dev
 
 This repository is the **ND-100 VS Code extension** plus a small **.NET code generator** that turns YAML instruction/register definitions into TypeScript data and a TextMate grammar. You maintain hand-written extension code under **`extension/`**. The tool overwrites only the **generated** files. TypeScript is then compiled to JavaScript under **`extension/build/`**, which VS Code loads. Optionally you package everything into a **`.vsix`** installable plugin.
 

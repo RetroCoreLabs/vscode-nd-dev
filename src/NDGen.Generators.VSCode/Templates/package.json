@@ -6,13 +6,13 @@
   "publisher": "retrocorelabs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd-dev"
   },
   "engines": {
     "vscode": "^1.85.0"
   },
   "bugs": {
-    "url": "https://github.com/RetroCoreLabs/vscode-nd100-dev/issues"
+    "url": "https://github.com/RetroCoreLabs/vscode-nd-dev/issues"
   },
   "keywords": ["ND-100", "assembly", "ndasm", "C", "compiler", "PCC", "cross-compiler", "debugger", "syntax highlighting", "minicomputer"],
   "categories": ["Programming Languages", "Debuggers"],
